@@ -26,7 +26,7 @@ exports.run = async (SMCodes, message, args, author) =>{
             .addBlankField()
             .addField("💰 Money » ", teste.money, false)
             .setTimestamp()
-            .setFooter(message.author.username, autor.user.avatarURL)
+            .setFooter(message.author.username, autor.user.avatarURL);
         message.channel.send(embedSkillUp).then(async msg => {
             await msg.react("640376514063368212")
             await msg.react("🛠")

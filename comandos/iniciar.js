@@ -25,7 +25,8 @@ exports.run = async (SMCodes, message, args, author) =>{
             limitenergia: 50,
             money: 0,
             banido: false,
-            picareta: 0
+            picareta: 0,
+            luck: 0
         });
         if(user_args) {
             message.reply("você criou uma conta para o "+member+" com sucesso, ele poderá aproveitar nossas funções.");
@@ -52,7 +53,8 @@ exports.run = async (SMCodes, message, args, author) =>{
             limitenergia: 50,
             money: 0,
             banido: false,
-            picareta: 0
+            picareta: 0,
+            luck: 0
         });
         if(user) {
             message.reply("Sua conta foi criada com sucesso, você já pode aproveitar nossas funções.");

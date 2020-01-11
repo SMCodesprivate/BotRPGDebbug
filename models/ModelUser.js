@@ -15,7 +15,8 @@ const Reg = new mongoose.Schema({
     job: Number,
     date_job: Number,
     server_id: String,
-    salary: Number
+    salary: Number,
+    luck: Number
 });
 
 module.exports = mongoose.model('User', Reg);

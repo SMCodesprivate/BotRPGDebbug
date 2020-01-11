@@ -1,19 +1,20 @@
 // https://discordapp.com/oauth2/authorize?client_id=639077779383648266&permissions=2147479031&scope=bot
 const Discord = require("discord.js");
-const config = require("./config.json");
-const SMCodes = new Discord.Client();
-const Channel = require("./models/ModelChannel");
-const fs = require('fs');
-const diff = require('./date');
-const searchPrefix = require("./Functions/searchPrefix");
-const Server = require("./models/ModelServer");
-const User = require("./models/ModelUser");
-const mongoose = require('mongoose');
-const cooldown = require("./Functions/cooldown");
-const fuc = require("./Functions/functions");
-const prox = require("./Functions/continue");
-const Job = require("./models/ModelJob");
-const Conta = require("./models/ModelConta");
+config = require("./config.json"),
+SMCodes = new Discord.Client(),
+Channel = require("./models/ModelChannel"),
+fs = require('fs'),
+diff = require('./date'),
+searchPrefix = require("./Functions/searchPrefix"),
+Server = require("./models/ModelServer"),
+User = require("./models/ModelUser"),
+mongoose = require('mongoose'),
+cooldown = require("./Functions/cooldown"),
+fuc = require("./Functions/functions"),
+prox = require("./Functions/continue"),
+Job = require("./models/ModelJob"),
+Conta = require("./models/ModelConta"),
+Lixo = require("./models/ModelLixo");
 SMCodes.commands = new Discord.Collection();
 SMCodes.aliases = new Discord.Collection();
 mongoose.connect('mongodb+srv://SMCodes:samuelpvp@omnistack9-kbth1.mongodb.net/botrpg?retryWrites=true&w=majority', {
@@ -146,7 +147,8 @@ function msToTime(duration) {
 	seconds = (seconds < 10) ? "0" + seconds : seconds;
 	return hours + ":" + minutes + ":" + seconds;
 }
-var users_data = [];
+var users_data = [],
+trash_data = [];
 SMCodes.on("message", async message => {
     if(message.author.bot) return;
     if(message.channel.type === "dm") return;
@@ -156,6 +158,40 @@ SMCodes.on("message", async message => {
             message.reply("**[Sessão] Sessão cancelada com sucesso!**");
         }
         switch(infos.type) {
+            case 'create_trash':
+                var z = -1;
+                for(var x = 0;x <= trash_data.length-1;x++) {
+                    if(trash_data[x].user_id === message.author.id) {
+                        z = x;
+                    }
+                }
+                console.log(z);
+                switch(infos.level) {
+                    case 0:
+                        message.channel.send("**[Sessão]** Muito bem você digitou o nome do lixo agora por favor digite o valor do lixo »");
+                        trash_data.push({ user_id: message.author.id, name: message.content });
+                        prox.up(message.author.id);
+                        break;
+                    case 1:
+                        if(isNaN(message.content) === true) return message.reply("**[Sessão] Por favor digite um valor numérico para ser colocado como valor do lixo.**");
+                        trash_data[z].value = Number(message.content);
+                        message.channel.send("**[Sessão]** Tudo ocorreu bem até agora por favor digite valor de raridade de 1-10 »");
+                        prox.up(message.author.id);
+                        break;
+                    case 2:
+                        if(isNaN(message.content) === true) return message.reply("**[Sessão] Por favor digite um valor numérico para ser colocado como um valor de probabildade do lixo.**");
+                        await Lixo.create({
+                            name: trash_data[z].name,
+                            price: trash_data[z].value,
+                            rarity: Number(message.content)
+                        });
+                        message.channel.send("**[Sessão]** Okay, tudo ocorreu bem durante essa sessão então consequentemente o lixo foi criado agora você pode usa-lo.");
+                        prox.remove(message.author.id);
+                    default:
+                        prox.remove(message.author.id);
+                        break;
+                }
+                break;
             case 'create_job':
                 var z = -1;
                 for(var x = 0;x <= users_data.length-1;x++) {
@@ -165,27 +201,27 @@ SMCodes.on("message", async message => {
                 }
                 switch(infos.level) {
                     case 0:
-                        if(isNaN(message.content) === true) return message.reply("**[Sessão] Por favor digite um valor numérico para ser colocado no id**");                        
+                        if(isNaN(message.content) === true) return message.reply("**[Sessão]** Por favor digite um valor numérico para ser colocado no id");
                         users_data.push({ user_id: message.author.id, id: message.content });
-                        message.channel.send("**[Sessão] Tudo ocorreu bem agora digite um nome do emprego »**");
+                        message.channel.send("**[Sessão]** Tudo ocorreu bem agora digite um nome do emprego »");
                         prox.up(message.author.id);
                         break;
                     case 1:
                         var job = await Job.findOne({ name: message.content });
-                        if(job !== null) return message.reply("**[Sessão] um eemprego com esse nome já existe.**");
+                        if(job !== null) return message.reply("**[Sessão]** um emprego com esse nome já existe.");
                         users_data[z].name = message.content.toLowerCase();
-                        message.channel.send("**[Sessão] Tudo ocorreu bem agora digite uma descrição sobre o emprego »**");
+                        message.channel.send("**[Sessão]** Tudo ocorreu bem agora digite uma descrição sobre o emprego »");
                         prox.up(message.author.id);
                         break;
                     case 2:
                         users_data[z].description = message.content;
-                        message.channel.send("**[Sessão] Tudo ocorreu bem agora digite um valor para o sálario do emprego »**");
+                        message.channel.send("**[Sessão]** Tudo ocorreu bem agora digite um valor para o sálario do emprego »");
                         prox.up(message.author.id);
                         break;
                     case 3:
-                        if(isNaN(message.content) === true) return message.reply("**[Sessão] Por favor digite um valor numérico para ser setado como salário.**");
+                        if(isNaN(message.content) === true) return message.reply("**[Sessão]** Por favor digite um valor numérico para ser setado como salário.");
                         users_data[z].salary = message.content;
-                        message.channel.send("**[Sessão] Tudo ocorreu bem agora digite os comandos exclusivos do emprego (separado por `,`) »**");
+                        message.channel.send("**[Sessão]** Tudo ocorreu bem agora digite os comandos exclusivos do emprego (separado por `,`) »");
                         prox.up(message.author.id);
                         break;
                     case 4:
@@ -194,11 +230,11 @@ SMCodes.on("message", async message => {
                             msg[loop] = msg[loop].trim();
                         }
                         users_data[z].unique = msg;
-                        message.channel.send("**[Sessão] Tudo ocorreu bem agora digite o level necessário para conseguir trabalhar nesse emprego »**");
+                        message.channel.send("**[Sessão]** Tudo ocorreu bem agora digite o level necessário para conseguir trabalhar nesse emprego »");
                         prox.up(message.author.id);
                         break;
                     case 5:
-                        if(isNaN(message.content) === true) return message.reply("**[Sessão] Por favor digite um valor numérico para ser setado como level necessário.**");
+                        if(isNaN(message.content) === true) return message.reply("**[Sessão]** Por favor digite um valor numérico para ser setado como level necessário.");
                         users_data[z].level = message.content;
                         var job = await Job.create({
                             id: users_data[z].id,
@@ -209,7 +245,7 @@ SMCodes.on("message", async message => {
                             unique_commands: users_data[z].unique,
                             level: message.content
                         });
-                        message.channel.send("**[Sessão] Parabéns você conseguiu completar 100% de uma Sessão com sucesso**");
+                        message.channel.send("**[Sessão]** Parabéns você conseguiu completar 100% de uma Sessão com sucesso");
                         prox.remove(message.author.id);
                         break;
                     default:
